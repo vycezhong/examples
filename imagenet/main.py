@@ -184,22 +184,24 @@ def main_worker(gpu, ngpus_per_node, args):
         if len(list(module.children())) > 0:
             return
         activations = 0
-
-        activations, dtype = count_tensors(outputs)
-        activations *= get_type_size(dtype)
-
-        if isinstance(inputs[0], list):
-            fn = str(inputs[0][0].grad_fn).lower()
+        if module.__dict__.get("inplace"):
+            pass
         else:
-            fn = str(inputs[0].grad_fn).lower()
+            activations, dtype = count_tensors(outputs)
+            activations *= get_type_size(dtype)
 
-        if "catbackward" in fn:
-            copy, dtype = count_tensors(inputs)
-            activations += copy * get_type_size(dtype)
+            if isinstance(inputs[0], list):
+                fn = str(inputs[0][0].grad_fn).lower()
+            else:
+                fn = str(inputs[0].grad_fn).lower()
 
-        if isinstance(module, nn.MaxPool2d):
-            indices_size, _ = count_tensors(outputs)
-            activations += indices_size * get_type_size(torch.int64)
+            if "catbackward" in fn:
+                copy, dtype = count_tensors(inputs)
+                activations += copy * get_type_size(dtype)
+
+            if isinstance(module, nn.MaxPool2d):
+                indices_size, _ = count_tensors(outputs)
+                activations += indices_size * get_type_size(torch.int64)
         cur = torch.cuda.memory_allocated()/1024.0/1024.0
 
         tot = torch.cuda.memory_reserved()/1024.0/1024.0
