@@ -127,13 +127,15 @@ class Model(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
+        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(32*112*112, num_classes),
+            nn.Linear(32*6*6, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x)
+        x = self.avgpool(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
