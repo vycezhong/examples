@@ -120,18 +120,18 @@ class Model(nn.Module):
 
     def __init__(self, num_classes: int = 1000) -> None:
         super(Model, self).__init__()
-        # self.features = nn.Sequential(
-        #     nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=2, stride=2)
-        # )
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
         self.classifier = nn.Sequential(
             nn.ReLU(inplace=True),
-            nn.Linear(3*224*224, num_classes),
+            nn.Linear(32*112*112, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x = self.features(x)
+        x = self.features(x)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
@@ -339,7 +339,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         end = time.time()
 
         if (i+1) % args.print_freq == 0:
-            print(torch.cuda.synchronize())
+            torch.cuda.synchronize()
             os.system("nvidia-smi -i 0 --query-gpu=memory.used --format=csv")
             print(torch.cuda.memory_summary())
             exit(0)
