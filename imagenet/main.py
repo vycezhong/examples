@@ -4,6 +4,7 @@ import random
 import shutil
 import time
 import warnings
+import pynvml
 
 import torch
 import torch.nn as nn
@@ -307,6 +308,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     # switch to train mode
     model.train()
 
+    pynvml.nvmlInit()
+    handle = pynvml.nvmlDeviceGetHandleByIndex(args.gpu)
     end = time.time()
     # print(torch.cuda.memory_summary())
     for i, (images, target) in enumerate(train_loader):
@@ -341,7 +344,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
         if (i+1) % args.print_freq == 0:
             torch.cuda.synchronize()
-            os.system("nvidia-smi -i 0 --query-gpu=memory.used --format=csv")
+            info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            print("%.2f MiB" % (info.used/1024.0/1024.0))
             print(torch.cuda.memory_summary())
             exit(0)
             # progress.display(i)
