@@ -130,7 +130,7 @@ class Model(nn.Module):
         x = self.conv1(x)
         x = F.relu(x, inplace=True)
         # x = self.pool(x)
-        x = self.fc(x.reshape[x.shape[0]], -1)
+        x = self.fc(x.reshape(x.shape[0], -1))
         return x
 
 
