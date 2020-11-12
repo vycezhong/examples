@@ -128,7 +128,7 @@ class Model(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
-        x = F.relu(x, inplace=True)
+        # x = F.relu(x, inplace=True)
         # x = self.pool(x)
         x = self.fc(x.reshape(x.shape[0], -1))
         return x
