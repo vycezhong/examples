@@ -16,4 +16,4 @@ fast_neural_style/saved_models.zip
 # vi backups
 *~
 
-logs/
+*.log
