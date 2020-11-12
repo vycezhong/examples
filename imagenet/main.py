@@ -18,8 +18,8 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 
-torch.cudnn.deterministic = True
-torch.cudnn.benchmark = False
+torch.cuda.cudnn.deterministic = True
+torch.cuda.cudnn.benchmark = False
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
