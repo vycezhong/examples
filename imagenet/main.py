@@ -122,6 +122,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
         )
         self.classifier = nn.Sequential(
             nn.Linear(8*224*224, num_classes),
@@ -307,7 +308,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     model.train()
 
     end = time.time()
-    print(torch.cuda.memory_summary())
+    # print(torch.cuda.memory_summary())
     for i, (images, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
@@ -329,9 +330,9 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
-        print(torch.cuda.memory_summary())
+        # print(torch.cuda.memory_summary())
         loss.backward()
-        print(torch.cuda.memory_summary())
+        # print(torch.cuda.memory_summary())
         optimizer.step()
 
         # measure elapsed time
