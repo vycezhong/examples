@@ -243,8 +243,9 @@ def main_worker(gpu, ngpus_per_node, args):
             activations += indices_size * get_type_size(torch.int64)
         cur = torch.cuda.memory_allocated()/1024.0/1024.0
 
-        print("%s act=%.2f MB true=%.2f" %
-              (module._get_name(), activations/1024.0/1024.0, cur-last))
+        tot = torch.cuda.memory_reserved()/1024.0/1024.0
+        print("%s act=%.2f MB true=%.2f allocated_peak=%.2f total peak=%.2f" %
+              (module._get_name(), activations/1024.0/1024.0, cur-last, cur, tot))
         last = cur
 
     def make_hook(module):
