@@ -118,44 +118,6 @@ def main():
         main_worker(args.gpu, ngpus_per_node, args)
 
 
-class Model(nn.Module):
-
-    def __init__(self, num_classes: int = 1000) -> None:
-        super(Model, self).__init__()
-        self.features = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
-            # nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(64, 192, kernel_size=5, padding=2),
-            # nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(192, 384, kernel_size=3, padding=1),
-            # nn.ReLU(inplace=True),
-            nn.Conv2d(384, 256, kernel_size=3, padding=1),
-            # nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            # nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-        )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
-        self.classifier = nn.Sequential(
-            # nn.Dropout(),
-            nn.Linear(256 * 6 * 6, 4096),
-            # nn.ReLU(inplace=True),
-            # nn.Dropout(),
-            nn.Linear(4096, 4096),
-            # nn.ReLU(inplace=True),
-            nn.Linear(4096, num_classes),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.features(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
-        return x
-
-
 def count_tensors(tensors):
     total_count = 0
     dtype = None
@@ -215,10 +177,7 @@ def main_worker(gpu, ngpus_per_node, args):
         model = models.__dict__[args.arch](pretrained=True)
     else:
         # print("=> creating model '{}'".format(args.arch))
-        # model = models.__dict__[args.arch]()
-        pass
-
-    model = Model()
+        model = models.__dict__[args.arch]()
 
     def hook(module, inputs, outputs):
         global last
