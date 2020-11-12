@@ -156,6 +156,39 @@ class Model(nn.Module):
         return x
 
 
+def count_tensors(tensors):
+    total_count = 0
+    dtype = None
+    if isinstance(tensors, (tuple, list)):
+        for tensor in tensors:
+            count, dtype = count_tensors(tensor)
+            total_count += count
+    else:
+        dtype = tensors.dtype
+        total_count += tensors.numel()
+
+    return total_count, dtype
+
+
+def get_type_size(dtype):
+    if dtype == torch.float32:
+        return 4
+    elif dtype == torch.float16 or dtype == torch.half or dtype == torch.bfloat16:
+        return 2
+    elif dtype == torch.float64:
+        return 8
+    elif dtype == torch.int or dtype == torch.int32:
+        return 4
+    elif dtype == torch.int64 or dtype == torch.long:
+        return 8
+    elif dtype == torch.int16 or dtype == torch.short:
+        return 2
+    elif dtype == torch.int8:
+        return 1
+    else:
+        raise ValueError("unknown dtype: %s" % dtype)
+
+
 def main_worker(gpu, ngpus_per_node, args):
     global best_acc1
     args.gpu = gpu
@@ -184,10 +217,28 @@ def main_worker(gpu, ngpus_per_node, args):
 
     model = Model()
 
-    def hook(module, x, y):
+    def hook(module, inputs, outputs):
         if len(list(module.children())) > 0:
             return
-        print(module._get_name())
+        activations = 0
+
+        activations, dtype = count_tensors(outputs)
+        activations *= get_type_size(dtype)
+
+        if isinstance(inputs[0], list):
+            fn = str(inputs[0][0].grad_fn).lower()
+        else:
+            fn = str(inputs[0].grad_fn).lower()
+
+        if "catbackward" in fn:
+            copy, dtype = count_tensors(inputs)
+            activations += copy * get_type_size(dtype)
+
+        if isinstance(module, nn.MaxPool2d):
+            indices_size, _ = count_tensors(outputs)
+            activations += indices_size * get_type_size(torch.int64)
+
+        print("%s %.2f MB" % (module._get_name(), activations/1024.0/1024.0))
         print(torch.cuda.memory_summary())
 
     def make_hook(module):
