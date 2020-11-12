@@ -244,7 +244,7 @@ def main_worker(gpu, ngpus_per_node, args):
         cur = torch.cuda.memory_allocated()/1024.0/1024.0
 
         tot = torch.cuda.memory_reserved()/1024.0/1024.0
-        print("%s act=%.2f MB true=%.2f allocated_peak=%.2f total peak=%.2f" %
+        print("%s act=%.2f MB\ttrue=%.2f\tallocated=%.2f MB\ttotal=%.2fMB" %
               (module._get_name(), activations/1024.0/1024.0, cur-last, cur, tot))
         last = cur
 
