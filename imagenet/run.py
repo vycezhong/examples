@@ -20,7 +20,7 @@ models = [
     # "resnext50_32x4d",
     # "resnext101_32x8d"
 ]
-bzs = [8]
+bzs = list(range(8, 129, 8))
 
 for model in models:
     file = "logs/" + model + ".log"
