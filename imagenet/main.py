@@ -400,7 +400,6 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     handle = pynvml.nvmlDeviceGetHandleByIndex(args.gpu)
     end = time.time()
     # print(torch.cuda.memory_summary())
-    last = torch.cuda.memory_allocated()/1024.0/1024.0
     for i, (images, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
@@ -411,6 +410,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             target = target.cuda(args.gpu, non_blocking=True)
 
         # compute output
+        last = torch.cuda.memory_allocated()/1024.0/1024.0
         output = model(images)
         loss = criterion(output, target)
 
