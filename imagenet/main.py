@@ -121,11 +121,10 @@ class Model(nn.Module):
     def __init__(self, num_classes: int = 1000) -> None:
         super(Model, self).__init__()
         self.features = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-            nn.MaxPool2d(kernel_size=2, stride=2)
+            nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(32*112*112, num_classes),
+            nn.Linear(8*224*224, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
