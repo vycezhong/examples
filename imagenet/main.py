@@ -184,6 +184,16 @@ def main_worker(gpu, ngpus_per_node, args):
 
     model = Model()
 
+    def hook(module, x, y):
+        if len(list(module.children())) > 0:
+            return
+        print(module._get_name())
+        print(torch.cuda.memory_summary())
+
+    def make_hook(module):
+        module.register_forward_hook(hook)
+    model.apply(make_hook)
+
     if not torch.cuda.is_available():
         print('using CPU, this will be slow')
     elif args.distributed:
