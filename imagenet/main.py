@@ -411,6 +411,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             target = target.cuda(args.gpu, non_blocking=True)
 
         # compute output
+        print("\n")
         last = torch.cuda.memory_allocated()/1024.0/1024.0
         output = model(images)
         loss = criterion(output, target)
