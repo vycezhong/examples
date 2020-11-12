@@ -358,7 +358,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         if i % args.print_freq == 0:
             os.system("nvidia-smi -i 0 --query-gpu=memory.used --format=csv")
             print(torch.cuda.memory_summary())
-            progress.display(i)
+            exit(0)
+            # progress.display(i)
 
 
 def validate(val_loader, model, criterion, args):
