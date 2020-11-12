@@ -189,6 +189,9 @@ def get_type_size(dtype):
         raise ValueError("unknown dtype: %s" % dtype)
 
 
+global last
+
+
 def main_worker(gpu, ngpus_per_node, args):
     global best_acc1
     args.gpu = gpu
@@ -218,6 +221,7 @@ def main_worker(gpu, ngpus_per_node, args):
     model = Model()
 
     def hook(module, inputs, outputs):
+        global last
         if len(list(module.children())) > 0:
             return
         activations = 0
@@ -237,9 +241,11 @@ def main_worker(gpu, ngpus_per_node, args):
         if isinstance(module, nn.MaxPool2d):
             indices_size, _ = count_tensors(outputs)
             activations += indices_size * get_type_size(torch.int64)
+        cur = torch.cuda.memory_allocated()/1024.0/1024.0
 
-        print("%s %.2f MB" % (module._get_name(), activations/1024.0/1024.0))
-        print(torch.cuda.memory_summary())
+        print("%s act=%.2f MB true=%.2f" %
+              (module._get_name(), activations/1024.0/1024.0, cur-last))
+        last = cur
 
     def make_hook(module):
         module.register_forward_hook(hook)
@@ -376,6 +382,7 @@ def main_worker(gpu, ngpus_per_node, args):
 
 
 def train(train_loader, model, criterion, optimizer, epoch, args):
+    global last
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -393,6 +400,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
     handle = pynvml.nvmlDeviceGetHandleByIndex(args.gpu)
     end = time.time()
     # print(torch.cuda.memory_summary())
+    last = torch.cuda.memory_allocated()/1024.0/1024.0
     for i, (images, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
