@@ -31,8 +31,8 @@ for model in models:
         continue
     with open(file, "r") as f:
         content = f.read()
-    items = re.findall("\d+ MiB", content)
-    items = [int(item.split()[0]) for item in items]
+    items = re.findall("\d+\.\d+ MiB", content)
+    items = [float(item.split()[0]) for item in items]
     lst.append(items)
 
 df = pd.DataFrame(lst)
